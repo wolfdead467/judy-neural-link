@@ -1,0 +1,42 @@
+# --- Gizli / kullaniciya ozel (ASLA repoya girmemeli) ---
+config.json
+.env
+*.log
+agent.log
+judy_action_log.txt
+judy_chat_response.txt
+judy_brain.json
+judy_overlay_state.txt
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+venv/
+venv310/
+venv311/
+.venv/
+.build_venv/
+.judy_venv/
+*.egg-info/
+
+# --- Paketleme ciktilari ---
+dist/
+build/
+*.zip
+
+# --- Ses ve model dosyalari (Hugging Face'te duruyor; GitHub 100 MB'tan buyuk dosyayi reddeder) ---
+*.wav
+*.pt
+*.pth
+*.index
+rvc_judy/
+judy_ornek*
+
+# --- Gecici / test ---
+judy_say_*.wav
+judy_test_*.wav
+judy_remote_cikti.wav
+*.tmp
+.DS_Store
+Thumbs.db

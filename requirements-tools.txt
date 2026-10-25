@@ -1,0 +1,5 @@
+# Optional: only for record_judy_sample.py (records your own voice sample from game audio). Windows only.
+numpy
+scipy
+soundfile
+PyAudioWPatch

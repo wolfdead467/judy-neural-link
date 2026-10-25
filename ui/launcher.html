@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Judy Neural-Link</title>
+<style>
+  /* Judy's braindance editor: deep violet ink, Mox pink, Clouds turquoise. */
+  :root {
+    --ink: #0c0716;
+    --panel: #150d24;
+    --panel-2: #1c1230;
+    --edge: rgba(185, 164, 255, 0.22);
+    --pink: #ff3d9a;
+    --teal: #35e6d4;
+    --lilac: #b9a4ff;
+    --amber: #ffc857;
+    --bone: #f4ecff;
+    --dim: #8f84ad;
+    --display: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", "Segoe UI", sans-serif;
+    --body: "Segoe UI", system-ui, sans-serif;
+    --mono: Consolas, "Cascadia Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background:
+      radial-gradient(120% 60% at 100% 0%, rgba(255, 61, 154, 0.16), transparent 60%),
+      radial-gradient(90% 50% at 0% 100%, rgba(53, 230, 212, 0.10), transparent 60%),
+      var(--ink);
+    color: var(--bone);
+    font-family: var(--body);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { padding: 16px 22px 14px; max-width: 480px; margin: 0 auto; }
+
+  /* ---------- Title ---------- */
+  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .mark {
+    width: 72px; height: auto; flex: none;
+    mix-blend-mode: screen;
+    -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
+            mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
+    filter: saturate(1.25) drop-shadow(0 0 8px rgba(255, 61, 154, 0.55));
+  }
+  h1 {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+  }
+  h1::before, h1::after {
+    content: attr(data-text);
+    position: absolute; inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  h1::before { color: var(--pink); }
+  h1::after  { color: var(--teal); }
+  h1.glitch::before { animation: gl-a 0.7s steps(2, end) 1; }
+  h1.glitch::after  { animation: gl-b 0.7s steps(2, end) 1; }
+  @keyframes gl-a {
+    0%   { opacity: 1; transform: translate(-3px, 0); clip-path: inset(10% 0 62% 0); }
+    25%  { opacity: 1; transform: translate(3px, 1px);  clip-path: inset(55% 0 12% 0); }
+    50%  { opacity: 1; transform: translate(-2px, -1px); clip-path: inset(30% 0 40% 0); }
+    75%  { opacity: 1; transform: translate(2px, 0);   clip-path: inset(70% 0 5% 0); }
+    100% { opacity: 0; transform: none; clip-path: inset(0); }
+  }
+  @keyframes gl-b {
+    0%   { opacity: 1; transform: translate(3px, 1px);  clip-path: inset(60% 0 8% 0); }
+    25%  { opacity: 1; transform: translate(-3px, 0);  clip-path: inset(8% 0 66% 0); }
+    50%  { opacity: 1; transform: translate(2px, 0);   clip-path: inset(42% 0 28% 0); }
+    75%  { opacity: 1; transform: translate(-2px, 1px); clip-path: inset(18% 0 55% 0); }
+    100% { opacity: 0; transform: none; clip-path: inset(0); }
+  }
+  .sub {
+    margin: 4px 0 0;
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    color: var(--lilac);
+  }
+
+  /* ---------- Braindance tracks (the one memorable element) ---------- */
+  .tracks {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    padding: 4px 14px 2px;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  .track { padding: 6px 0 7px; }
+  .track + .track { border-top: 1px solid rgba(185, 164, 255, 0.10); }
+  .track-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .track-name { font-family: var(--display); font-size: 15px; letter-spacing: 0.04em; }
+  .track-val { font-size: 12px; color: var(--dim); text-align: right; }
+  .bar {
+    height: 4px; margin-top: 5px; border-radius: 1px;
+    background: repeating-linear-gradient(90deg, rgba(185,164,255,0.16) 0 6px, transparent 6px 9px);
+    transition: background 0.3s;
+  }
+  .track[data-s="ok"] .bar   { background: var(--teal); box-shadow: 0 0 10px rgba(53, 230, 212, 0.45); }
+  .track[data-s="ok"] .track-val { color: var(--teal); }
+  .track[data-s="warn"] .bar { background: var(--amber); }
+  .track[data-s="warn"] .track-val { color: var(--amber); }
+  .track[data-s="wait"] .bar {
+    background: repeating-linear-gradient(90deg, var(--lilac) 0 6px, transparent 6px 9px);
+    opacity: 0.7;
+  }
+  .playhead {
+    position: absolute; top: 0; bottom: 0; left: 14px;
+    width: 2px; background: var(--pink);
+    box-shadow: 0 0 12px var(--pink);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .playhead::before {
+    content: ""; position: absolute; top: 0; left: -4px;
+    border: 5px solid transparent; border-top-color: var(--pink);
+  }
+  .tracks.live .playhead { opacity: 1; animation: scrub 6s linear infinite; }
+  @keyframes scrub { from { left: 14px; } to { left: calc(100% - 16px); } }
+
+  /* ---------- Fields ---------- */
+  label {
+    display: block;
+    margin: 12px 0 5px;
+    font-size: 13px;
+    color: var(--lilac);
+  }
+  input, select {
+    width: 100%;
+    background: var(--panel-2);
+    color: var(--bone);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+  .row { display: flex; gap: 8px; }
+  .codebox input { flex: 1; font-size: 16px; letter-spacing: 0.1em; color: var(--teal); }
+  button {
+    background: transparent;
+    color: var(--bone);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    padding: 8px 14px;
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button:hover { background: rgba(185, 164, 255, 0.10); border-color: var(--lilac); }
+  .labelrow { margin-top: 0; display: flex; justify-content: space-between; align-items: baseline; }
+  button.link {
+    border: none; padding: 0;
+    color: var(--pink);
+    font-family: var(--body); font-size: 12px; letter-spacing: 0;
+    background: none;
+  }
+  button.link:hover { background: none; text-decoration: underline; }
+  .hint { margin-top: 6px; font-size: 12px; line-height: 1.4; color: var(--dim); }
+  .actions { margin-top: 12px; }
+  .actions button { flex: 1; }
+  .pathrow { display: flex; align-items: baseline; gap: 10px; margin-top: 7px; }
+  .pathrow .path { margin-top: 0; flex: 1; min-width: 0; }
+  .pathrow .link { flex: none; }
+  .path { margin-top: 7px; font-family: var(--mono); font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: rtl; text-align: left; }
+
+  button.go {
+    width: 100%; margin-top: 12px; padding: 12px;
+    background: var(--pink); color: #1a0510; border: none;
+    font-size: 19px; font-weight: 700; letter-spacing: 0.1em;
+    box-shadow: 0 0 22px rgba(255, 61, 154, 0.35);
+  }
+  button.go:hover { background: #ff63ad; }
+  button.go.out { background: transparent; color: var(--pink); border: 1px solid var(--pink); box-shadow: none; }
+  button.go.out:hover { background: rgba(255, 61, 154, 0.12); }
+  .msg { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--amber); }
+
+  @media (prefers-reduced-motion: reduce) {
+    h1.glitch::before, h1.glitch::after { animation: none; }
+    .tracks.live .playhead { animation: none; left: 50%; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div>
+        <h1 id="title" data-text="Judy">Judy</h1>
+        <p class="sub">NEURAL-LINK</p>
+      </div>
+      <img class="mark" src="mox_logo.png" alt="" />
+    </header>
+
+    <section class="tracks" id="tracks" aria-label="Connection status">
+      <div class="playhead" aria-hidden="true"></div>
+      <div class="track" id="tr-ai" data-s="off">
+        <div class="track-top"><span class="track-name">AI</span><span class="track-val" id="v-ai">No key yet</span></div>
+        <div class="bar"></div>
+      </div>
+      <div class="track" id="tr-game" data-s="off">
+        <div class="track-top"><span class="track-name">Game</span><span class="track-val" id="v-game">Looking for Cyberpunk 2077</span></div>
+        <div class="bar"></div>
+      </div>
+      <div class="track" id="tr-voice" data-s="wait" hidden>
+        <div class="track-top"><span class="track-name">Voice</span><span class="track-val" id="v-voice">Waiting for Colab</span></div>
+        <div class="bar"></div>
+      </div>
+      <div class="track" id="tr-agent" data-s="wait">
+        <div class="track-top"><span class="track-name">Link</span><span class="track-val" id="v-agent">Jacked out</span></div>
+        <div class="bar"></div>
+      </div>
+    </section>
+
+    <label for="provider">AI provider</label>
+    <select id="provider">
+      <option value="groq">Groq</option>
+      <option value="gemini">Gemini</option>
+      <option value="openai">OpenAI</option>
+    </select>
+
+    <div class="labelrow">
+      <label for="groq">API key</label>
+      <button class="link" id="groqLink" type="button">Get a key</button>
+    </div>
+    <input id="groq" type="password" placeholder="Paste your key" autocomplete="off" />
+
+    <label for="code">Session code</label>
+    <div class="row codebox">
+      <input id="code" readonly />
+      <button id="copy" type="button">Copy</button>
+    </div>
+    <div class="hint">Paste it into the Colab form once. It stays the same and doubles as the server password.</div>
+
+    <div class="row actions">
+      <button id="openColab" type="button">Open Colab</button>
+      <button id="install" type="button">Install mod</button>
+    </div>
+    <div class="pathrow">
+      <div class="path" id="game">Looking for Cyberpunk 2077…</div>
+      <button class="link" id="browse" type="button">Browse</button>
+    </div>
+
+    <button class="go" id="start" type="button">Jack in</button>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+  </main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const msg = $("msg"), groq = $("groq"), provider = $("provider"), code = $("code");
+  const game = $("game"), startBtn = $("start"), title = $("title"), tracks = $("tracks");
+  let agentOn = false;
+  let colabTimer = null;
+
+  function setTrack(id, state, text) {
+    $("tr-" + id).dataset.s = state;
+    $("v-" + id).textContent = text;
+  }
+
+  function glitch() {
+    title.classList.remove("glitch");
+    void title.offsetWidth;
+    title.classList.add("glitch");
+  }
+
+  let voiceRetry = null;
+  function retryVoiceSoon() {
+    // A new Cloudflare tunnel needs a few seconds to resolve: check again soon, not in 15 s.
+    clearTimeout(voiceRetry);
+    voiceRetry = setTimeout(refreshVoice, 5000);
+  }
+
+  async function refreshVoice() {
+    const api = window.pywebview && window.pywebview.api;
+    const row = $("tr-voice");
+    if (!api || typeof api.colab_status !== "function") { row.hidden = true; return; }
+    row.hidden = false;
+    if (!agentOn) { setTrack("voice", "wait", "Starts when you jack in"); return; }
+    try {
+      const r = await api.colab_status();
+      if (r && r.ok) setTrack("voice", "ok", "Colab is live");
+      else { setTrack("voice", "warn", (r && r.message) || "Colab not found. Run the notebook."); retryVoiceSoon(); }
+    } catch (e) {
+      setTrack("voice", "warn", "Colab not found. Run the notebook.");
+      retryVoiceSoon();
+    }
+  }
+
+  function setRunning(on) {
+    agentOn = !!on;
+    startBtn.textContent = agentOn ? "Jack out" : "Jack in";
+    startBtn.className = agentOn ? "go out" : "go";
+    tracks.classList.toggle("live", agentOn);
+    setTrack("agent", agentOn ? "ok" : "wait", agentOn ? "Judy is listening" : "Jacked out");
+    clearInterval(colabTimer);
+    refreshVoice();
+    if (agentOn) colabTimer = setInterval(refreshVoice, 15000);
+  }
+
+  async function boot() {
+    const s = await window.pywebview.api.state();
+    groq.value = s.groq_key || "";
+    provider.value = ["groq", "gemini", "openai"].includes(s.ai_provider) ? s.ai_provider : "groq";
+    code.value = s.session_code || "";
+
+    game.textContent = s.cet_dir ? s.cet_dir : (s.game_dir ? s.game_dir + "  (Cyber Engine Tweaks missing)" : "Cyberpunk 2077 not found");
+    setTrack("ai", s.groq_key ? "ok" : "off", s.groq_key ? "Key saved" : "No key yet");
+    if (s.cet_dir) setTrack("game", "ok", "Cyber Engine Tweaks found");
+    else if (s.game_dir) setTrack("game", "warn", "Install Cyber Engine Tweaks first");
+    else setTrack("game", "off", "Cyberpunk 2077 not found");
+    setRunning(s.agent_running);
+  }
+
+  function saveApi() {
+    setTrack("ai", groq.value.trim() ? "ok" : "off", groq.value.trim() ? "Key saved" : "No key yet");
+    return window.pywebview.api.save_provider(groq.value, provider.value);
+  }
+
+  groq.addEventListener("change", saveApi);
+  provider.addEventListener("change", saveApi);
+  $("groqLink").onclick = () => window.pywebview.api.open_key_page(provider.value);
+  $("openColab").onclick = () => window.pywebview.api.open_colab();
+  $("browse").onclick = async () => {
+    const r = await window.pywebview.api.browse_game();
+    if (r.ok) { msg.textContent = "Game folder saved."; boot(); }
+    else if (r.error) msg.textContent = r.error;
+  };
+
+  $("copy").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(code.value);
+      msg.textContent = "Code copied. Paste it into the Colab form.";
+    } catch (e) {
+      code.select();
+      msg.textContent = "Press Ctrl+C to copy the code.";
+    }
+  };
+
+  $("install").onclick = async () => {
+    const r = await window.pywebview.api.install_cet();
+    msg.textContent = r.ok ? "Mod installed." : (r.error || "Install failed.");
+    boot();
+  };
+
+  startBtn.onclick = async () => {
+    glitch();
+    await saveApi();
+    const turningOff = agentOn;
+    const r = turningOff ? await window.pywebview.api.stop_agent() : await window.pywebview.api.start_agent();
+    msg.textContent = r.message || "";
+    if (r.ok) setRunning(!turningOff);
+  };
+
+  async function watchAgent() {
+    if (!agentOn) return;
+    try {
+      const r = await window.pywebview.api.agent_status();
+      if (!r.running) {
+        setRunning(false);
+        msg.textContent = "Link stopped" + (r.exit_code ? " (code " + r.exit_code + ")" : "") + ". Open agent.log for details.";
+        setTrack("agent", "warn", "Stopped unexpectedly");
+      }
+    } catch (e) { /* launcher closing */ }
+  }
+  setInterval(watchAgent, 3000);
+
+  window.addEventListener("pywebviewready", boot);
+  window.addEventListener("load", () => setTimeout(glitch, 250));
+
+  /* Browser preview only (open launcher.html?preview=1): fake backend. The real launcher never sets this. */
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("preview") === "1") {
+    let running = qs.get("running") === "1";
+    window.pywebview = { api: {
+      state: async () => ({ groq_key: "gsk_preview_key", ai_provider: "groq", session_code: "Xk3p9Qw2LmT7vB1a",
+        game_dir: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Cyberpunk 2077",
+        cet_dir: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Cyberpunk 2077\\bin\\x64\\plugins\\cyber_engine_tweaks",
+        agent_running: running }),
+      save_provider: async () => true, open_key_page: async () => true, open_colab: async () => true,
+      install_cet: async () => ({ ok: true }),
+      browse_game: async () => ({ ok: true, game_dir: "D:\\Games\\Cyberpunk 2077" }),
+      start_agent: async () => { running = true; return { ok: true, message: "Judy is listening. Go back to the game." }; },
+      stop_agent: async () => { running = false; return { ok: true, message: "Link closed." }; },
+      agent_status: async () => ({ running: running, exit_code: null }),
+      colab_status: async () => ({ ok: true }),
+    } };
+    boot();
+  }
+</script>
+</body>
+</html>

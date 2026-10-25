@@ -1,0 +1,3 @@
+# Judy Neural-Link: what the launcher + agent need on the player's PC (Windows).
+# The voice models (XTTS v2 + RVC) run in Google Colab; the notebook installs those packages itself.
+pywebview>=5.0
