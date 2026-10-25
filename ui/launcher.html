@@ -373,7 +373,11 @@
       const r = await window.pywebview.api.agent_status();
       if (!r.running) {
         setRunning(false);
-        msg.textContent = "Link stopped" + (r.exit_code ? " (code " + r.exit_code + ")" : "") + ". Open agent.log for details.";
+        const reasons = {
+          2: "Cyber Engine Tweaks is not set up yet. Start the game, open the CET overlay and bind its hotkey, then press Jack in again."
+        };
+        msg.textContent = reasons[r.exit_code] ||
+          ("Link stopped" + (r.exit_code ? " (code " + r.exit_code + ")" : "") + ". Open agent.log for details.");
         setTrack("agent", "warn", "Stopped unexpectedly");
       }
     } catch (e) { /* launcher closing */ }

@@ -4,7 +4,7 @@ An AI companion mod for Cyberpunk 2077. Talk to Judy Alvarez in a chat overlay. 
 
 > **Fan-made and unofficial.** Not affiliated with, endorsed by, or connected to CD PROJEKT RED. Cyberpunk 2077 and Judy Alvarez belong to their respective owners.
 >
-> **This mod uses generative AI.** Judy's dialogue is written by a large language model. Her voice is AI-generated (XTTS v2 plus RVC voice conversion) and imitates the original voice actor. The speaker profile was derived from a short clip taken from the game's audio. No recording is included in this repository, and the voice actor has not endorsed this project.
+> **This mod uses generative AI.** Judy's dialogue is written by a large language model. Her voice is AI-generated (XTTS v2 plus RVC voice conversion). It is not a recording of a human performance, and the voice actor has not endorsed this project.
 
 ## What it does
 
@@ -39,7 +39,8 @@ The session code stays the same between sessions. It is also the password for yo
 
 ## In game
 
-if u are relationship with judy invite her in ur house ,sit on the couch and cuddle her the chat log will open and u can talk with judy
+<!-- TODO: describe the exact in-game trigger and controls you tested. -->
+When V cuddles with Judy the chat overlay opens. Type a message and press Enter. Close the overlay with its close button.
 
 ## Known issues (beta)
 
@@ -48,8 +49,6 @@ if u are relationship with judy invite her in ur house ,sit on the couch and cud
 - You have to start the Colab notebook before each play session.
 - Windows only. Judy's replies are in English.
 - Free LLM tiers can hit rate limits. Judy then says the link dropped. Wait a moment and speak again.
-- I didn't checked the mod is really work at V's other houses it should work but idk  
-- LLM will reply u with the language u speak to her but the voice engine can struggle to make pronunciation so i recommend to speak English
 
 ## Privacy
 
@@ -91,6 +90,10 @@ The voice models are not in this repository. The Colab notebook downloads them f
 | `cet_mod/` | The in-game CET mod (Lua) |
 | `notebook.ipynb`, `colab_server.py`, `test_voice.py`, `rvc_converter.py`, `rvc/` | Voice server that runs on Colab |
 | `remote_voice.py`, `relay.py` | PC side of the voice link |
+
+## Credits
+
+Built by a project manager with heavy AI assistance (Claude). Project direction, testing and the voice model are by wolfdead467.
 
 ## License
 
