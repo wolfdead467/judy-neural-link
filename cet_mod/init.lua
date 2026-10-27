@@ -124,8 +124,8 @@ registerForEvent("onInit", function()
         local okObs, errObs = pcall(registerObservers)
         if not okObs then print("[Judy Mod] Could not register game observers: " .. tostring(errObs)) end
     end
-    print("[Judy Mod] Neural-Link in-game chat loaded. (build v11: + read-me window)")
-    if debugLog then debugLog("=== init.lua build v11 loaded ===") end
+    print("[Judy Mod] Neural-Link in-game chat loaded. (build v12: + read-me window)")
+    if debugLog then debugLog("=== init.lua build v12 loaded ===") end
 end)
 
 registerForEvent("onOverlayOpen", function()
@@ -487,12 +487,12 @@ end)
 end -- registerObservers
 
 -- Manual fallback hotkey
-registerHotkey("judy_chat_hotkey", "Judy: Neural-Link Sohbetini Ac", function()
+registerHotkey("judy_chat_hotkey", "Judy: Open Neural-Link chat", function()
     requestChat("hotkey")
 end)
 
 -- Tani: fact degerlerini CET konsoluna yazar (Bindings sekmesinden bir tus ata)
-registerHotkey("judy_story_dump", "Judy: Gorev Fact Degerlerini Yaz (test)", function()
+registerHotkey("judy_story_dump", "Judy: Dump quest fact values (test)", function()
     if story then story.dump() else print("[Judy Mod] judy_story.lua yuklu degil") end
 end)
 
@@ -723,7 +723,7 @@ registerForEvent("onDraw", function()
             ImGui.SameLine()
             ImGui.PushStyleColor(ImGuiCol.Button, 0.1, 0.1, 0.1, 0.8)
             ImGui.PushStyleColor(ImGuiCol.Text, 0.8, 0.2, 0.2, 1.0)
-            if ImGui.Button("[X] Kapat", 80, 0) then
+            if ImGui.Button("[X] Close", 80, 0) then
                 chatActive = false
                 chatOpened = false
                 chatCooldown = 2.0

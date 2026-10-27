@@ -70,7 +70,7 @@ class RemoteVoiceEngine:
         req = urllib.request.Request(f"{self.base_url}/health", headers=self._headers())
         with urllib.request.urlopen(req, timeout=20) as r:
             info = json.loads(r.read().decode("utf-8"))
-        print(f"[+] Colab sunucusuna baglanildi: {self.base_url} ({info})")
+        print(f"[+] Connected to the Colab server: {self.base_url} ({info})")
 
     def _refresh_url(self) -> bool:
         new = resolve_url()
@@ -102,7 +102,7 @@ class RemoteVoiceEngine:
                 break
             except urllib.error.HTTPError as e:
                 if e.code == 401:
-                    raise RuntimeError("Oturum kodu Colab'daki ile ayni degil (401).")
+                    raise RuntimeError("The session code does not match the one in Colab (401).")
                 last_err = f"HTTP {e.code}"
             except (urllib.error.URLError, ConnectionError, TimeoutError, OSError) as e:
                 last_err = str(e)
@@ -110,7 +110,7 @@ class RemoteVoiceEngine:
                 time.sleep(2)
                 self._refresh_url()
         if audio is None:
-            raise RuntimeError(f"Colab TTS ulasilamadi: {last_err}")
+            raise RuntimeError(f"Colab TTS unreachable: {last_err}")
 
         tmp = out_path + ".tmp"
         with open(tmp, "wb") as f:

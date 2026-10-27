@@ -22,7 +22,7 @@ def get_rag_prompt():
         with open(RAG_FILE, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        print(f"[-] RAG dosyasi okunamadi: {e}")
+        print(f"[-] Could not read the RAG file: {e}")
         return "You are Judy Alvarez from Cyberpunk 2077."
 
 # 3. GROQ API İLE İLETİŞİM (Ekstra kütüphane kurdurmamak için dahili urllib kullanıyoruz)
@@ -40,7 +40,7 @@ def ask_judy(system_prompt, user_text, game_context):
     else:
         api_key = _cached_groq_key
     if not api_key:
-        return '{"text": "API Hatasi: Groq API key girilmemis (launcher).", "emotion": "SAD", "action": "none"}'
+        return '{"text": "API error: no Groq API key set (launcher).", "emotion": "SAD", "action": "none"}'
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -60,7 +60,7 @@ def ask_judy(system_prompt, user_text, game_context):
         "response_format": {"type": "json_object"}
     }
     
-    print("\n[~] Judy düşünüyor (Groq API'ye bağlanılıyor)...")
+    print("\n[~] Judy is thinking (connecting to the Groq API)...")
     
     try:
         data = json.dumps(payload).encode("utf-8")
@@ -70,16 +70,16 @@ def ask_judy(system_prompt, user_text, game_context):
             return result["choices"][0]["message"]["content"]
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode()
-        return f'{{"text": "API Hatasi: {err_msg}", "emotion": "SAD", "action": "none"}}'
+        return f'{{"text": "API error: {err_msg}", "emotion": "SAD", "action": "none"}}'
     except Exception as e:
-        return f'{{"text": "Baglanti Hatasi: {e}", "emotion": "SAD", "action": "none"}}'
+        return f'{{"text": "Connection error: {e}", "emotion": "SAD", "action": "none"}}'
 
 # 4. ANA DÖNGÜ (OYUNU DİNLEME VE KULLANICI GİRİŞİ)
 def start_server():
     print("========================================")
-    print("  JUDY NEURAL-LINK BEYNİ AKTİF (GROQ)")
+    print("  JUDY NEURAL-LINK BRAIN ACTIVE (GROQ)")
     print("========================================")
-    print(f"[*] Oyun Sinyali Bekleniyor: {BRAIN_FILE}\n")
+    print(f"[*] Waiting for the game signal: {BRAIN_FILE}\n")
     
     system_prompt = get_rag_prompt()
     latest_game_state = {"status": "Waiting for game data"}
@@ -92,7 +92,7 @@ def start_server():
                     data = f.read()
                 if data.strip():
                     latest_game_state = json.loads(data)
-                    print(f"[+] Oyundan yeni anılar geldi: {latest_game_state}")
+                    print(f"[+] New memories from the game: {latest_game_state}")
                 os.remove(BRAIN_FILE)
             except:
                 pass
@@ -104,7 +104,7 @@ def start_server():
         if user_input.strip() == "":
             continue
         if user_input.lower() in ['exit', 'quit']:
-            print("Bağlantı kesiliyor...")
+            print("Disconnecting...")
             break
             
         # Groq API'ye gönder
@@ -117,7 +117,7 @@ def start_server():
             if judy_response.get('action') and judy_response.get('action') != "none":
                 print(f"*[Judy Yapar: {judy_response.get('action')}]*")
         except Exception as e:
-            print(f"\nJUDY (Bozuk Sinyal): {response_json_str}")
+            print(f"\nJUDY (corrupted signal): {response_json_str}")
         
         time.sleep(0.1)
 

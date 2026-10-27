@@ -268,8 +268,8 @@ def poll_brain():
         GAME_STATE["V_ROMANCE_STATUS"] = "Friends only (not romantic)"
     else:
         GAME_STATE["V_ROMANCE_STATUS"] = _DEFAULT_ROMANCE
-    print(f"[judy-brain] biten: {[e[0] for e in done_events]} | latest(gizli): {GAME_STATE['LATEST_QUEST_CONTEXT']}")
-    print(f"[judy-brain] tum durum id'leri: {sorted(_state_ids)}")
+    print(f"[judy-brain] finished: {[e[0] for e in done_events]} | latest(hidden): {GAME_STATE['LATEST_QUEST_CONTEXT']}")
+    print(f"[judy-brain] all state ids: {sorted(_state_ids)}")
     print(f"[judy-brain] romance={GAME_STATE['V_ROMANCE_STATUS']!r} maiko={GAME_STATE['MAIKO_STATUS']!r} evelyn={GAME_STATE['EVELYN_STATUS']!r}")
 
 
@@ -331,7 +331,7 @@ def _load_rag():
     if _rag is None:
         _rag = judy_rag.JudyRag(_judy_server.get_rag_prompt())
         n = _rag.add_chunks(_load_branch_chunks())
-        print(f"[judy-rag] {len(_rag.chunks) - n} ani + {n} dal parcasi yuklendi")
+        print(f"[judy-rag] {len(_rag.chunks) - n} memories + {n} branch chunks loaded")
     return _rag
 
 
@@ -420,7 +420,7 @@ def ask_judy(user_text: str) -> tuple[str, str, bool]:
         "response_format": {"type": "json_object"},
     }
 
-    print(f"\n[~] Judy düşünüyor ({provider.upper()} - {model_name})...")
+    print(f"\n[~] Judy is thinking ({provider.upper()} - {model_name})...")
 
     # Gemini düşünerek cevaplar; 15 sn yetmez. Diger saglayicilar 15 sn.
     timeout_sec = 60.0 if provider == "gemini" else 15.0
@@ -457,10 +457,10 @@ def ask_judy(user_text: str) -> tuple[str, str, bool]:
             if wait_time is not None:
                 return f"RATE_LIMIT:{wait_time}", "calm", False
 
-        print(f"[judy] API Hatasi ({provider}): {err_msg}")
+        print(f"[judy] API error ({provider}): {err_msg}")
         return "...the link dropped for a sec, V. Say that again?", "calm", False
     except Exception as e:
-        print(f"[judy] Baglanti Hatasi: {e}")
+        print(f"[judy] Connection error: {e}")
         return "...the link dropped for a sec, V. Say that again?", "calm", False
 
 
@@ -496,7 +496,7 @@ def _connect_remote_voice(quiet: bool = False) -> bool:
     if not quiet:
         print(f"\n[*] Judy ses motoru: Colab (XTTSv2 + RVC v2) -> {colab_url}")
     _voice_engine = RemoteVoiceEngine(colab_url)
-    print("[+] Colab ses motoru hazir! (Yerel VRAM kullanimi: 0 MB)\n")
+    print("[+] Colab voice engine ready! (local VRAM use: 0 MB)\n")
     return True
 
 
@@ -524,7 +524,7 @@ def _start_voice_reconnect():
 def init_voice_engine():
     global _voice_engine
     if not ENABLE_TTS:
-        print("[*] TTS devre disi (JUDY_ENABLE_TTS=0).")
+        print("[*] TTS disabled (JUDY_ENABLE_TTS=0).")
         return
 
     try:
@@ -532,9 +532,9 @@ def init_voice_engine():
             return
         print("\n[!] Colab URL yok. Run the Colab notebook with your session code. Text only for now.")
     except Exception as e:
-        print(f"[!] Colab sesine ulasilamadi. Yerel ekran karti acilmadi. Sadece metin: {e}")
+        print(f"[!] Could not reach the Colab voice. The local GPU was not used. Text only: {e}")
 
-    print(f"[*] Arka planda her {VOICE_RECONNECT_SEC:.0f} sn'de bir Colab tekrar denenecek (LLM'e istek atilmaz).")
+    print(f"[*] Retrying Colab every {VOICE_RECONNECT_SEC:.0f} s in the background (no LLM requests are sent).")
     _start_voice_reconnect()
 
 
@@ -589,14 +589,14 @@ def _handle_request(text: str, vks: list[int]):
             # Saglayicinin istedigi sure. Ust sinir 30 sn.
             wait_time = float(answer.split(":")[1]) + 0.5
             wait_time = min(wait_time, 30.0)
-            print(f"[judy] Kota doldu. {wait_time:.1f} saniye bekleniyor...")
+            print(f"[judy] Rate limit reached. Waiting {wait_time:.1f} seconds...")
             time.sleep(wait_time)
             answer, emotion, ok = ask_judy(text)
             if not ok and answer.startswith("RATE_LIMIT:"):
                 answer = "...the link dropped for a sec, V. Say that again?"
         else:
             # Zaman asimi ve kota disi hatalarda ikinci istek yok.
-            print("[judy] Zaman asimi veya kritik hata. Tekrar denenmiyor.")
+            print("[judy] Timeout or critical error. Not retrying.")
 
     print(f"[Judy] {answer}")
 
@@ -611,9 +611,9 @@ def _handle_request(text: str, vks: list[int]):
                     emotion=emotion,
                     out_path=_new_wav_path(),  # her cumle ayri dosya: onceki ses calarken uzerine yazilmaz
                 )
-                print(f"[judy-tts] Ses hazir ({dt:.2f}s) -> Senkronize oynatiliyor!")
+                print(f"[judy-tts] Voice ready ({dt:.2f}s) -> playing in sync!")
             except Exception as e:
-                print(f"[judy-tts] Sentez hatasi: {e}")
+                print(f"[judy-tts] Synthesis error: {e}")
 
     write_response(answer)
     if out_wav and os.path.exists(out_wav):
@@ -648,7 +648,7 @@ def main():
     try:
         _instance_lock.bind(("127.0.0.1", 55555))
     except socket.error:
-        print("[!] HATA: Baska bir Judy Ajani zaten arka planda calisiyor. Kendimi imha ediyorum.")
+        print("[!] ERROR: Another Judy agent is already running in the background. Exiting.")
         sys.exit(0)
 
     if "--selftest" in sys.argv:
@@ -699,7 +699,7 @@ def main():
 
             if os.path.exists(TRIGGER_FILE):
                 remove_quiet(TRIGGER_FILE)
-                print(f"[judy] Cuddle trigger -> overlay {OVERLAY_DELAY_SEC}s sonra acilacak (V'nin yaklasmasi bekleniyor)")
+                print(f"[judy] Cuddle trigger -> overlay opens in {OVERLAY_DELAY_SEC}s (waiting for V to settle in)")
                 open_overlay_at = time.time() + OVERLAY_DELAY_SEC
 
             if open_overlay_at is not None and time.time() >= open_overlay_at:
@@ -709,7 +709,7 @@ def main():
                 if wait_overlay_state(True):
                     print(f"[judy] {time.strftime('%H:%M:%S')} overlay opened: OK")
                 else:
-                    print("[judy] overlay acilmadi / Lua'dan onay yok (tekrar basilmadi)")
+                    print("[judy] overlay did not open / no confirmation from Lua (not pressing again)")
 
             if os.path.exists(CLOSE_FILE):
                 remove_quiet(CLOSE_FILE)
