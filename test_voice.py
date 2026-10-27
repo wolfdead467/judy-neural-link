@@ -6,6 +6,7 @@ Judy Dynamic-VRAM XTTSv2 + RVC v2 (40kHz) Ses Motoru (Method C)
 """
 import gc
 import os
+import re
 import sys
 import time
 import numpy as np
@@ -28,6 +29,26 @@ CLEAN_REF_WAV = os.path.join(BASE_DIR, "judy_ornek_packed.wav")
 LATENT_CACHE = os.path.join(BASE_DIR, "judy_voice_latents.pt")
 RAW_OUT_WAV = os.path.join(BASE_DIR, "judy_test_raw.wav")
 RVC_OUT_WAV = os.path.join(BASE_DIR, "judy_test_cikti.wav")
+
+
+_SENTENCE_END = re.compile(r"(?<=[.!?…])\s+")
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split a reply into sentences for XTTS.
+
+    XTTS can stop after the first sentence when it gets several in one go
+    (it only splits on its own above ~250 characters), so each sentence is
+    synthesized separately. Very short fragments ("Hm.") stay with the next one.
+    """
+    parts = [p.strip() for p in _SENTENCE_END.split(text.strip()) if p.strip()]
+    merged: list[str] = []
+    for part in parts:
+        if merged and len(merged[-1]) < 12:
+            merged[-1] = merged[-1] + " " + part
+        else:
+            merged.append(part)
+    return merged or [text.strip()]
 
 
 def get_vram_mb() -> float:
@@ -162,22 +183,29 @@ class JudyVoiceEngine:
         clean_text = text.strip()
 
         t0 = time.time()
+        sentences = split_sentences(clean_text)
+        gap = np.zeros(int(0.15 * 24000), dtype=np.float32)
+        pieces = []
         with torch.inference_mode():
-            out = self.model.inference(
-                text=clean_text,
-                language=language,
-                gpt_cond_latent=self.gpt_cond_latent,
-                speaker_embedding=self.speaker_embedding,
-                temperature=0.35,
-                length_penalty=1.0,
-                repetition_penalty=6.0,
-                top_k=35,
-                top_p=0.80,
-                speed=0.97,
-                enable_text_splitting=False,  # TEK NEFESTE KESINTISIZ DUYGUSAL URETIM!
-            )
+            for idx, sentence in enumerate(sentences):
+                out = self.model.inference(
+                    text=sentence,
+                    language=language,
+                    gpt_cond_latent=self.gpt_cond_latent,
+                    speaker_embedding=self.speaker_embedding,
+                    temperature=0.35,
+                    length_penalty=1.0,
+                    repetition_penalty=6.0,
+                    top_k=35,
+                    top_p=0.80,
+                    speed=0.97,
+                    enable_text_splitting=False,  # each sentence is already one chunk
+                )
+                pieces.append(np.asarray(out["wav"], dtype=np.float32))
+                if idx < len(sentences) - 1:
+                    pieces.append(gap)
 
-        wav = np.asarray(out["wav"], dtype=np.float32)
+        wav = np.concatenate(pieces)
         sf.write(RAW_OUT_WAV, wav, 24000, subtype="PCM_16")
         dt_xtts = time.time() - t0
 

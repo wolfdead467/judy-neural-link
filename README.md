@@ -16,6 +16,7 @@ An AI companion mod for Cyberpunk 2077. Talk to Judy Alvarez in a chat overlay. 
 ## Requirements
 
 - Cyberpunk 2077 (PC, Steam, GOG or Epic) and [Cyber Engine Tweaks](https://www.nexusmods.com/cyberpunk2077/mods/107) installed. Open the CET overlay once and bind its hotkey.
+- **In-game subtitles set to English.** The chat trigger recognises the English option names.
 - Windows 10 or 11 with the Microsoft Edge WebView2 runtime (already present on most systems).
 - An API key from Groq, Google AI Studio (Gemini) or OpenAI. Free tiers exist but limits change. Groq worked best in testing.
 - For voice only: a Google account and a Colab session with a T4 GPU.
@@ -39,8 +40,9 @@ The session code stays the same between sessions. It is also the password for yo
 
 ## In game
 
-<!-- TODO: describe the exact in-game trigger and controls you tested. -->
-When V cuddles with Judy the chat overlay opens. Type a message and press Enter. Close the overlay with its close button.
+Stay within about 10 metres of Judy and press **[Cuddle]**. When the in-cuddle options (**[Stroke hair]** / **[Stop cuddling]**) appear, the chat overlay opens. It is not tied to one apartment; it was tested in five different ones. Type a message and press Enter. Close the overlay with its close button.
+
+On the first run the mod shows a short read-me window when you open the CET overlay.
 
 ## Known issues (beta)
 
@@ -48,6 +50,9 @@ When V cuddles with Judy the chat overlay opens. Type a message and press Enter.
 - Free Colab sessions can disconnect or refuse a GPU. Run the notebook again if the Voice light goes yellow. A fresh tunnel can take a few seconds before it answers.
 - You have to start the Colab notebook before each play session.
 - Windows only. Judy's replies are in English.
+- Only English subtitles are supported. Other game languages are not tested, so the chat may not open.
+- The chat opens only from the cuddle, not from other scenes or from regular dialogue.
+- After using *Reload all mods* in the CET overlay, load a save again, otherwise Judy is not detected.
 - Free LLM tiers can hit rate limits. Judy then says the link dropped. Wait a moment and speak again.
 
 ## Privacy

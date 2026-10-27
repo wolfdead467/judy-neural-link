@@ -3,6 +3,7 @@ Judy Colab TTS Sunucusu (XTTSv2 + RVC v2) - Google Colab (T4 16GB) uzerinde cali
 Yerel PC -> Cloudflare tuneli -> POST /tts {"text": "..."} -> WAV (40kHz) geri doner.
 Modeller Colab GPU'sunda kalici yuklu tutulur; yerel PC'de 0 MB VRAM kullanilir.
 """
+import hmac
 import os
 import sys
 import tempfile
@@ -18,6 +19,9 @@ from flask import Flask, jsonify, request, send_file  # noqa: E402
 from test_voice import JudyVoiceEngine  # noqa: E402
 
 AUTH_TOKEN = os.getenv("JUDY_TOKEN", "")
+if not AUTH_TOKEN:
+    # Without a token anyone who finds the tunnel URL could use the GPU. Refuse to start instead of running open.
+    sys.exit("[!] JUDY_TOKEN is not set. Set it (the notebook uses the session code) and start again. Refusing to run without authentication.")
 
 app = Flask(__name__)
 _lock = threading.Lock()
@@ -32,7 +36,7 @@ print("[+] Colab ses motoru hazir!")
 
 
 def _authorized() -> bool:
-    return not AUTH_TOKEN or request.headers.get("X-Judy-Token", "") == AUTH_TOKEN
+    return bool(AUTH_TOKEN) and hmac.compare_digest(request.headers.get("X-Judy-Token", "").encode("utf-8"), AUTH_TOKEN.encode("utf-8"))
 
 
 @app.route("/health")

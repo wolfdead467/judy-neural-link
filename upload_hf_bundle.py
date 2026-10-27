@@ -41,7 +41,7 @@ tags:
 
 Fan-mod voice runtime for a personal Cyberpunk 2077 companion. Colab downloads this repo with `snapshot_download`.
 
-Contains the XTTSv2 reference clip, cached speaker latents, and the RVC v2 40 kHz weights plus the small Python runtime (`colab_server.py`).
+Contains cached XTTS v2 speaker latents, the RVC v2 40 kHz weights and the small Python runtime (`colab_server.py`). No recording is included. Unofficial fan project, not affiliated with CD PROJEKT RED. The voice is AI-generated and has not been endorsed by the original voice actor.
 
 No API keys live in this repo.
 """
@@ -60,8 +60,8 @@ def main() -> None:
         sys.exit(
             "HF girisi yok. Token'i sohbete yapistirma.\n"
             "Once tarayicidan bir write token al: https://huggingface.co/settings/tokens\n"
-            "Sonra bu venv ile giris yap:\n"
-            r"  C:\Users\wolfd\.judy_venv\Scripts\huggingface-cli.exe login"
+            "Sonra giris yap:\n"
+            "  huggingface-cli login"
             f"\n{e}"
         )
     name = who.get("name") or who.get("fullname")
