@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>JudyNeuralLink</AssemblyName>
+    <RootNamespace>JudyNeuralLink</RootNamespace>
+    <Version>0.2.0-alpha</Version>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.*" />
+  </ItemGroup>
+
+  <!-- Files shipped next to the exe, as a plain folder (no inner archives). Paths are relative to the dotnet folder. -->
+  <ItemGroup>
+    <None Include="..\RAG" Link="data\RAG" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\RAG_branches.json" Link="data\RAG_branches.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\cet_mod\init.lua" Link="data\cet_mod\init.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\cet_mod\judy_story.lua" Link="data\cet_mod\judy_story.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\ui\**\*" Exclude="..\ui\__pycache__\**" Link="ui\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Remove="ui\**" />
+  </ItemGroup>
+
+</Project>

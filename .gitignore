@@ -24,6 +24,9 @@ venv311/
 dist/
 build/
 *.zip
+bin/
+obj/
+publish_sc/
 
 # --- Ses ve model dosyalari (Hugging Face'te duruyor; GitHub 100 MB'tan buyuk dosyayi reddeder) ---
 *.wav
@@ -40,3 +43,10 @@ judy_remote_cikti.wav
 *.tmp
 .DS_Store
 Thumbs.db
+dotnet/bin/
+dotnet/obj/
+dotnet/publish_fd/
+dotnet/publish_sc/
+build_onefile/
+dist_onefile/
+JudyNeuralLink-onefile.spec
