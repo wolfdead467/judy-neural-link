@@ -76,13 +76,18 @@ The log is at `%APPDATA%\JudyNeuralLink\agent.log`. Remove anything private befo
 
 ## Build from source
 
+The app is a native Windows program (C#, .NET 8, WebView2). It needs the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and Windows.
+
 ```powershell
-python -m venv .build_venv
-.\.build_venv\Scripts\python -m pip install -r requirements-build.txt
-.\.build_venv\Scripts\pyinstaller --noconfirm JudyNeuralLink.spec
+cd dotnet
+dotnet publish -c Release -r win-x64 --self-contained true -o publish_sc
 ```
 
-The result is in `dist\JudyNeuralLink\`. To run without building: `pip install -r requirements.txt`, then `python judy_launcher.py`.
+The result is a plain folder, `dotnet\publish_sc\`: `JudyNeuralLink.exe`, the .NET runtime files, `ui\` (the launcher page) and `data\` (the RAG files and the CET mod). There are no archives inside it. Zip that folder to share it.
+
+The launcher page is `ui/launcher.html`. The app shows it in a WebView2 window, and a small script maps `window.pywebview.api.*` calls to C# methods in `dotnet/Bridge.cs`.
+
+The earlier Python version (`judy_launcher.py`, `judy_agent.py`, PyInstaller) is kept in this repository for reference. The Colab voice server is still Python.
 
 The voice models are not in this repository. The Colab notebook downloads them from Hugging Face: [wolfdead/judy-neural-link-voice](https://huggingface.co/wolfdead/judy-neural-link-voice).
 
@@ -90,11 +95,13 @@ The voice models are not in this repository. The Colab notebook downloads them f
 
 | Path | Purpose |
 |---|---|
-| `judy_launcher.py`, `ui/` | Launcher window |
-| `judy_agent.py`, `judy_rag.py`, `judy_server.py`, `RAG`, `RAG_branches.json` | The agent: reads game state, builds the prompt, calls the LLM, plays the voice |
+| `dotnet/` | The Windows app: launcher window, agent loop, RAG, LLM and voice clients (C#) |
+| `ui/` | Launcher page (HTML) shown by the app |
+| `RAG`, `RAG_branches.json` | Judy's personality and memories, used by the app to build the prompt |
+| `judy_launcher.py`, `judy_agent.py`, `judy_rag.py`, `judy_server.py` | Earlier Python version of the app (reference) |
 | `cet_mod/` | The in-game CET mod (Lua) |
 | `notebook.ipynb`, `colab_server.py`, `test_voice.py`, `rvc_converter.py`, `rvc/` | Voice server that runs on Colab |
-| `remote_voice.py`, `relay.py` | PC side of the voice link |
+| `remote_voice.py`, `relay.py` | PC side of the voice link (Python version; the C# version is in `dotnet/`) |
 
 ## Credits
 
