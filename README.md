@@ -105,7 +105,7 @@ The voice models are not in this repository. The Colab notebook downloads them f
 
 ## Credits
 
-Built by a project manager with heavy AI assistance (Claude). Project direction, testing and the voice model are by wolfdead467.
+Built by a project manager with AI assistance (Claude,Gemini,Grok). Project direction, testing and the voice model are by wolfdead467.
 
 ## License
 
